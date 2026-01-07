@@ -13,16 +13,22 @@ normalize <- function(x){
   (x - min(x)) / (max(x) - min(x))
 }
 
+# Para ver los intervalos de cada clase
 cereals_norm <- as.data.frame(lapply(cereals, normalize))
+intervalos <- cut(
+  cereals_norm$rating,
+  breaks = 3
+)
+levels(intervalos)
 
 cereals_norm$rating_class <- cut(
   cereals_norm$rating,
   breaks = 3,
   labels = c("Bajo", "Medio", "Alto")
 )
-
 cereals_norm$rating <- NULL
 cereals_norm$rating_class <- as.factor(cereals_norm$rating_class)
+
 set.seed(42)
 split <- sample.split(cereals_norm$rating_class, SplitRatio = 0.60)
 entrenamiento <- cereals_norm[split, ]
@@ -69,3 +75,17 @@ confusion <- table(
 
 confusion
 confusionMatrix(clase_predicha, prueba$rating_class)
+# Convertir la matriz a data frame
+conf_df <- as.data.frame(confusion)
+
+# Grafica tipo heatmap
+ggplot(conf_df, aes(x = Predicho, y = Real, fill = Freq)) +
+  geom_tile(color = "white") +
+  geom_text(aes(label = Freq), size = 5) +
+  scale_fill_gradient(low = "lightblue", high = "darkblue") +
+  labs(
+    title = "Matriz de Confusion",
+    x = "Clase Predicha",
+    y = "Clase Real"
+  ) +
+  theme_minimal()
